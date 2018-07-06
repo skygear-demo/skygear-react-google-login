@@ -13,41 +13,32 @@ class App extends Component {
     this.state = this.defaultStates;
 
     this.onLogin = () => {
-      skygear.auth.loginOAuthProviderWithPopup('google').then(
+      skygear.auth.loginOAuthProviderWithPopup('google').then((user) => {
+        // loginOAuthProviderWithPopup returns a Record Type
+        this.setState({ user: JSON.stringify(user.toJSON(), null, 2) });
+
+        // As a second login check, return another promise for chaining
+        return skygear.auth.getOAuthProviderProfiles();
+      }).then((profileJson) => {
+        // getOAuthProviderProfiles return a JSON type
+        this.setState({ profile: JSON.stringify(profileJson, null, 2) });
+
         // sign in was successful
-        user => {
-          console.info('Login success', user);
-          console.info('Access token:', skygear.auth.accessToken);
-          console.info('Username:', skygear.auth.currentUser.username);
-  
-          // status becomes signed in
-          this.setState({ status: this.statuses[1] });
-          skygear.auth.whoami().then(
-            // whoami returns a Record type
-            record => this.setState({ user: JSON.stringify(record.toJSON(), null, 2) }),
-            this.onError('')
-          );
-          skygear.auth.getOAuthProviderProfiles().then(
-            // getOAuthProviderProfiles return a JSON type
-            profileJson => this.setState({ profile: JSON.stringify(profileJson, null, 2) }),
-            this.onError('')
-          );  
-        },
-        // sign in was unsuccessful
-        this.onError('Login failure')
-      );
+        console.info('Login success');
+        console.info('Access token:', skygear.auth.accessToken);
+        console.info('Username:', skygear.auth.currentUser.username);
+        // status becomes signed in
+        this.setState({ status: this.statuses[1] });  
+      }).catch(this.onError('Login failure'));
     };
 
     this.onLogout = () => {
-      skygear.auth.logout().then(
-        this.isCurrentUserNull() ?
-          this.onError('Logout failure') :
-          user => {
-            console.info('Logout success');
-            this.setState(this.defaultStates);
-          },
-        this.onError('Logout failure')
-      );
+      skygear.auth.logout().then(() => {
+        return this.isCurrentUserNull();
+      }).then(() => {
+        console.info('Logout success');
+        this.setState(this.defaultStates);
+      }).catch(this.onError('Logout failure'));
     };
 
     this.onError = (message) => {
@@ -61,8 +52,8 @@ class App extends Component {
   isCurrentUserNull() {
     // as a check after skygear.auth.logout()
     skygear.auth.whoami().then(
-      value => false,
-      error => true
+      (value) => { return false},
+      (error) => { return true}
     );
   }
 
