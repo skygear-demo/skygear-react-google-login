@@ -13,21 +13,24 @@ class App extends Component {
     this.state = this.defaultStates;
 
     this.onLogin = () => {
-      Promise.all([
-        skygear.auth.loginOAuthProviderWithPopup('google'),
-        skygear.auth.getOAuthProviderProfiles()
-      ]).then((values) => {
-        // sign in was successful
-        console.info('Login success');
-        console.info('Access token:', skygear.auth.accessToken);
-        console.info('Username:', skygear.auth.currentUser.username);
-        // status becomes signed in
-        this.setState({ status: this.statuses[1] });
-        // values[0] correponds to loginOAuthProviderWithPopup returning user
-        this.setState({ user: JSON.stringify(values[0].toJSON(), null, 2) });
-        // values[1] correponds to getOAuthProviderProfiles returning profileJson
-        this.setState({ profile: JSON.stringify(values[1], null, 2) });
-      }).catch(this.onError('Login failure'));
+      skygear.auth.loginOAuthProviderWithPopup('google')
+        .then((value) => {
+          // value correponds to loginOAuthProviderWithPopup returning user
+          this.setState({ user: JSON.stringify(value.toJSON(), null, 2) });
+          // after loginOAuthProviderWithPopup, we can legally getOAuthProviderProfiles
+          skygear.auth.getOAuthProviderProfiles()
+            .then((value) => {
+              // value correponds to getOAuthProviderProfiles returning profileJson
+              this.setState({ profile: JSON.stringify(value, null, 2) });
+            }).catch(this.onError('Login failure at getOAuthProviderProfiles'));  
+        }).then(() => {
+          // sign in was successful
+          console.info('Login success');
+          console.info('Access token:', skygear.auth.accessToken);
+          console.info('Username:', skygear.auth.currentUser.username);
+          // status becomes signed in
+          this.setState({ status: this.statuses[1] });
+        }).catch(this.onError('Login failure at loginOAuthProviderWithPopup'));
     };
 
     this.onLogout = () => {
@@ -56,12 +59,12 @@ class App extends Component {
   }
 
   // implement Auto login
-  /* componentDidMount() {
+  componentDidMount() {
     // if accessToken exists
-    if (skygear.auth.accessToken != "") {
+    if (skygear.auth.accessToken !== "") {
       Promise.all([
         skygear.auth.whoami(),
-        skygear.getOAuthProviderProfiles()
+        skygear.auth.getOAuthProviderProfiles()
       ]).then((values) => {
         // sign in was successful
         console.info('Auto login success');
@@ -79,7 +82,7 @@ class App extends Component {
       });
     }
     // else { keep status as 'not yet signed in' }
-  } */
+  }
 
   render() { 
     return (
