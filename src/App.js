@@ -18,19 +18,18 @@ class App extends Component {
           // value correponds to loginOAuthProviderWithPopup returning user
           this.setState({ user: JSON.stringify(value.toJSON(), null, 2) });
           // after loginOAuthProviderWithPopup, we can legally getOAuthProviderProfiles
-          skygear.auth.getOAuthProviderProfiles()
-            .then((value) => {
-              // value correponds to getOAuthProviderProfiles returning profileJson
-              this.setState({ profile: JSON.stringify(value, null, 2) });
-            }).catch(this.onError('Login failure at getOAuthProviderProfiles'));  
-        }).then(() => {
+          return skygear.auth.getOAuthProviderProfiles()
+        }).then((value) => {
+          // value correponds to getOAuthProviderProfiles returning profileJson
+          this.setState({ profile: JSON.stringify(value, null, 2) });
+          
           // sign in was successful
           console.info('Login success');
           console.info('Access token:', skygear.auth.accessToken);
           console.info('Username:', skygear.auth.currentUser.username);
           // status becomes signed in
           this.setState({ status: this.statuses[1] });
-        }).catch(this.onError('Login failure at loginOAuthProviderWithPopup'));
+        }).catch(this.onError('Login failure'));
     };
 
     this.onLogout = () => {
