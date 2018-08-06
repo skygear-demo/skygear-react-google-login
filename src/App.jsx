@@ -4,11 +4,11 @@ import skygear from 'skygear';
 class App extends Component {
   constructor(props) {
     super(props);
-    this.statuses = ['not yet signed in', 'signed in', 'error message'];      // bad practice?
+    this.statuses = ['not yet signed in', 'signed in', 'error message']; // bad practice?
     this.defaultStates = {
       status: this.statuses[0],
-      user: "",
-      profile: ""
+      user: '',
+      profile: '',
     };
     this.state = this.defaultStates;
 
@@ -18,7 +18,7 @@ class App extends Component {
           // value correponds to loginOAuthProviderWithPopup returning user
           this.setState({ user: JSON.stringify(value.toJSON(), null, 2) });
           // after loginOAuthProviderWithPopup, we can legally getOAuthProviderProfiles
-          return skygear.auth.getOAuthProviderProfiles()
+          return skygear.auth.getOAuthProviderProfiles();
         }).then((value) => {
           // value correponds to getOAuthProviderProfiles returning profileJson
           this.setState({ profile: JSON.stringify(value, null, 2) });
@@ -41,21 +41,19 @@ class App extends Component {
         .catch(this.onError('Logout failure'));
     };
 
-    this.onError = (message) => {
-      return (error) => {
-        console.error(message, error);
-        this.setState({ status: this.statuses[2] });
-      }
-    };;
+    this.onError = message => (error) => {
+      console.error(message, error);
+      this.setState({ status: this.statuses[2] });
+    };
   }
 
   // implement Auto login
   componentDidMount() {
     // if accessToken exists
-    if (skygear.auth.accessToken !== "") {
+    if (skygear.auth.accessToken !== '') {
       Promise.all([
         skygear.auth.whoami(),
-        skygear.auth.getOAuthProviderProfiles()
+        skygear.auth.getOAuthProviderProfiles(),
       ]).then((values) => {
         // sign in was successful
         console.info('Auto login success');
@@ -78,19 +76,41 @@ class App extends Component {
   render() {
     return (
       <div className="Login">
-        <h1>Skygear Google Login with Pop up Demo</h1>
-        <button className="block-button secondary-bg" onClick={() => this.onLogin()}>Login with Google</button>
+        <h1>
+          Skygear Google Login with Pop up Demo
+        </h1>
+        <button
+          className="block-button secondary-bg"
+          type="button"
+          onClick={() => this.onLogin()}
+        >
+          Login with Google
+        </button>
 
-        <p>Google login status:</p>
-        <div className="block-div">{this.state.status}</div>
+        <p>
+          Google login status:
+        </p>
+        <div className="block-div">
+          {this.state.status}
+        </div>
 
-        <p>Skygear currentUser:</p>
-        <div className="block-div">{this.state.user}</div>
+        <p>
+          Skygear currentUser:
+        </p>
+        <div className="block-div">
+          {this.state.user}
+        </div>
 
-        <p>currentUser Google profile:</p>
-        <div className="block-div ">{this.state.profile}</div>
-        <br/>
-        <button className="inline-button" onClick={() => this.onLogout()}>Logout</button>
+        <p>
+          currentUser Google profile:
+        </p>
+        <div className="block-div ">
+          {this.state.profile}
+        </div>
+        <br />
+        <button className="inline-button" onClick={() => this.onLogout()}>
+          Logout
+        </button>
       </div>
     );
   }
