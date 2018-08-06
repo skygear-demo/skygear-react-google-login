@@ -5,110 +5,83 @@ class App extends Component {
   constructor(props) {
     super(props);
     this.statuses = ['not yet signed in', 'signed in', 'error message'];      // bad practice?
-    this.default_states = {
+    this.defaultStates = {
       status: this.statuses[0],
       user: "",
       profile: ""
     };
-    this.state = this.default_states;
+    this.state = this.defaultStates;
 
-    this.onLogin = this.onLogin.bind(this);
-    this.onLogout = this.onLogout.bind(this);
-    this.onError = this.onError.bind(this);
-  }
+    this.onLogin = () => {
+      skygear.auth.loginOAuthProviderWithPopup('google')
+        .then((value) => {
+          // value correponds to loginOAuthProviderWithPopup returning user
+          this.setState({ user: JSON.stringify(value.toJSON(), null, 2) });
+          // after loginOAuthProviderWithPopup, we can legally getOAuthProviderProfiles
+          return skygear.auth.getOAuthProviderProfiles()
+        }).then((value) => {
+          // value correponds to getOAuthProviderProfiles returning profileJson
+          this.setState({ profile: JSON.stringify(value, null, 2) });
+          
+          // sign in was successful
+          console.info('Login success');
+          console.info('Access token:', skygear.auth.accessToken);
+          console.info('Username:', skygear.auth.currentUser.username);
+          // status becomes signed in
+          this.setState({ status: this.statuses[1] });
+        }).catch(this.onError('Login failure'));
+    };
 
-  onLogin() {
-    skygear.auth.loginOAuthProviderWithPopup('google').then(
-      // sign in was successful
-      user => {
-        console.info('Login success', user);
-        console.info('Access token:', skygear.auth.accessToken);
-        console.info('Username:', skygear.auth.currentUser.username);
+    this.onLogout = () => {
+      skygear.auth.logout().then(() => {
+        return this.isCurrentUserNull();
+      }).then(() => {
+        console.info('Logout success');
+        this.setState(this.defaultStates);
+      }).catch(this.onError('Logout failure'));
+    };
 
-        // status becomes signed in
-        this.setState({ status: this.statuses[1] });
-        skygear.auth.whoami().then(
-          // whoami returns a Record type
-          record => this.setState({ user: JSON.stringify(record.toJSON(), null, 2) }),
-          this.onError('')
-        );
-        skygear.auth.getOAuthProviderProfiles().then(
-          // getOAuthProviderProfiles return a JSON type
-          profileJson => this.setState({ profile: JSON.stringify(profileJson, null, 2) }),
-          this.onError('')
-        );  
-      },
-      // sign in was unsuccessful
-      this.onError('Login failure')
-    );
-  }
-
-  /*
-  doLogin(user) {
-    // display login info from console
-    console.info('Login success', user);
-    console.info('Access token:', skygear.auth.accessToken);
-    console.info('Username:', skygear.auth.currentUser.username);
-
-    // status becomes signed in
-    this.setState({ status: this.statuses[1] });
-    skygear.auth.whoami().then(
-      // whoami returns a Record type
-      record => this.setState({ user: JSON.stringify(record.toJSON(), null, 2) }),
-      error => {
-        console.error(error);
+    this.onError = (message) => {
+      return (error) => {
+        console.error(message, error);
         this.setState({ status: this.statuses[2] });
       }
-    );
-    skygear.auth.getOAuthProviderProfiles().then(
-      // getOAuthProviderProfiles return a JSON type
-      profileJson => this.setState({ profile: JSON.stringify(profileJson, null, 2) }),
-      error => {
-        console.error(error);
-        this.setState({ status: this.statuses[2] });
-      }
-    );
-  }
-  */
-
-  onLogout() {
-    skygear.auth.logout().then(
-      this.isCurrentUserNull() ?
-        this.onError('Logout failure') :
-        user => {
-          console.info('Logout success');
-          this.setState(this.default_states);
-        },
-      this.onError('Logout failure')
-    );
+    };;
   }
 
   isCurrentUserNull() {
     // as a check after skygear.auth.logout()
     skygear.auth.whoami().then(
-      value => false,
-      error => true
+      (value) => { return false },
+      (error) => { return true }
     );
   }
 
-  onError(message) {
-    return error => {
-      console.error(message, error);
-      this.setState({ status: this.statuses[2] });
+  // implement Auto login
+  componentDidMount() {
+    // if accessToken exists
+    if (skygear.auth.accessToken !== "") {
+      Promise.all([
+        skygear.auth.whoami(),
+        skygear.auth.getOAuthProviderProfiles()
+      ]).then((values) => {
+        // sign in was successful
+        console.info('Auto login success');
+        console.info('Access token:', skygear.auth.accessToken);
+        console.info('Username:', skygear.auth.currentUser.username);
+        // status becomes signed in
+        this.setState({ status: this.statuses[1] });
+        // values[0] correponds to loginOAuthProviderWithPopup returning user
+        this.setState({ user: JSON.stringify(values[0].toJSON(), null, 2) });
+        // values[1] correponds to getOAuthProviderProfiles returning profileJson
+        this.setState({ profile: JSON.stringify(values[1], null, 2) });
+      }).catch(() => {
+        console.info('Auto login failure');
+        this.onLogout();
+      });
     }
-  };
-
-  /*
-  doLogout(user) {
-    if (this.isCurrentUserNull()) {
-      console.error('Logout failure');
-      this.setState({ status: this.statuses[2] });
-    } else {
-      console.info('Logout success');
-      this.setState(this.default_states);
-    }
+    // else { keep status as 'not yet signed in' }
   }
-  */
 
   render() { 
     return (

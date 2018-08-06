@@ -13,7 +13,8 @@ skygear.config({
     endPoint,
     apiKey
   }).then(value => console.info(value))
+    .then(() => {
+      ReactDOM.render(<App />, document.getElementById('root'));
+      registerServiceWorker();
+    })
     .catch(error => console.error(error));
-
-ReactDOM.render(<App />, document.getElementById('root'));
-registerServiceWorker();
