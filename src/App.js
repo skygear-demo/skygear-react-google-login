@@ -22,7 +22,7 @@ class App extends Component {
         }).then((value) => {
           // value correponds to getOAuthProviderProfiles returning profileJson
           this.setState({ profile: JSON.stringify(value, null, 2) });
-          
+
           // sign in was successful
           console.info('Login success');
           console.info('Access token:', skygear.auth.accessToken);
@@ -33,12 +33,12 @@ class App extends Component {
     };
 
     this.onLogout = () => {
-      skygear.auth.logout().then(() => {
-        return this.isCurrentUserNull();
-      }).then(() => {
-        console.info('Logout success');
-        this.setState(this.defaultStates);
-      }).catch(this.onError('Logout failure'));
+      skygear.auth.logout()
+        .then(() => {
+          console.info('Logout success');
+          this.setState(this.defaultStates);
+        })
+        .catch(this.onError('Logout failure'));
     };
 
     this.onError = (message) => {
@@ -47,14 +47,6 @@ class App extends Component {
         this.setState({ status: this.statuses[2] });
       }
     };;
-  }
-
-  isCurrentUserNull() {
-    // as a check after skygear.auth.logout()
-    skygear.auth.whoami().then(
-      (value) => { return false },
-      (error) => { return true }
-    );
   }
 
   // implement Auto login
@@ -83,7 +75,7 @@ class App extends Component {
     // else { keep status as 'not yet signed in' }
   }
 
-  render() { 
+  render() {
     return (
       <div className="Login">
         <h1>Skygear Google Login with Pop up Demo</h1>
