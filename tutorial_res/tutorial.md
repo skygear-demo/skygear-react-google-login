@@ -17,7 +17,7 @@ Disclaimer: this is a React absolute beginner-proof guide
 
 We will still need to install one more console application later but for now we are ready to start the project!
  
-3. Pick a name for your application, say `skygear-social-login-google`, which is the project name I will be using. Feel free to change all occurences of this into your own `${PROJECT_NAME}`.
+3. Pick a name for your application, say `skygear-social-login-google`, which is the project name I will be using. Feel free to change all occurrences of this into your own `${PROJECT_NAME}`.
 
 4. Run `create-react-app ${PROJECT_NAME}`, which in my case is `create-react-app skygear-social-login-google`.
 
@@ -284,9 +284,9 @@ Perfect. Now comes the part with most work: `App.js`.
         ```
         `skygear.auth.loginOAuthProviderWithPopup('google')` returns a [promise](http://jamesknelson.com/grokking-es6-promises-the-four-functions-you-need-to-avoid-callback-hell/) typed object, which runs `async` (running in the background) code for you in a `synchronous` (sequential execution; normal line-by-line) situation. This is useful when this background process is asking for resource from a third-party API but still the code is not expected to wait till this to finish, but continue executing the next line.
 
-          - What to do when that background async process is done though? That's why we have `promise.then(successCallback, failureCallback)`. Notice in `onLogin`, if login was successful, we call `this.doLogin` (to be defined right below); else the login was unsucessful thus we instead call the error handler `error => { ... }`.
+          - What to do when that background async process is done though? That's why we have `promise.then(successCallback, failureCallback)`.
 
-          - `successCallback` takes the format `value => doSomethingWith(value)`, and what that `value` is depends on what the `promise` promised to return. This is usually detailed in API documentation (see below). Simiarly, `failureCallback` takes the format `error => doSomethingElseWith(error)` if an error occured and is supplied.
+          - `successCallback` takes the format `value => doSomethingWith(value)`, and what that `value` is depends on what the `promise` promised to return. This is usually detailed in API documentation (see below). Similarly, `failureCallback` takes the format `error => doSomethingElseWith(error)` if an error occurred and is supplied.
 
         So now to set the `user` field we do:
 
@@ -302,7 +302,7 @@ Perfect. Now comes the part with most work: `App.js`.
 
         We used a few Skygear [AuthContainer APIs](https://docs.skygear.io/js/reference/latest/class/packages/skygear-core/lib/auth.js~AuthContainer.html) here, definitely check them out to understand how those methods work together. You can also find [another reference guide](https://docs.skygear.io/guides/auth/social-login/js/) on this. `skygear.auth` is the module under `skygear` that deals with authentication.
 
-        `loginOAuthProviderWithPopup` on sucess (resolved) returns a `Record`, a Skygear-defined type. According to [the API]((https://docs.skygear.io/js/reference/latest/class/packages/skygear-core/lib/record.js~Record.html)) it is converted to json by `.toJSON()`. 
+        `loginOAuthProviderWithPopup` on success (resolved) returns a `Record`, a Skygear-defined type. According to [the API]((https://docs.skygear.io/js/reference/latest/class/packages/skygear-core/lib/record.js~Record.html)) it is converted to json by `.toJSON()`. 
         As `this.state.user` is a string, we use [`JSON.stringify(json, null, indent)`](https://alligator.io/js/json-parse-stringify/) to further convert the json to formatted json string.
 
         Next after login, we also need to get the profile of the user.
